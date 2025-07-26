@@ -43,8 +43,8 @@ Create a `.env` file in the root directory with the following content:
 # SMTP Configuration
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USERNAME=venkateshwaramotors.trl@gmail.com
-SMTP_PASSWORD=bgjugfwfijtdvgjd
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
 
 # Server Configuration
 PORT=3000
@@ -65,15 +65,7 @@ The server will start on port 3000 (or the port specified in your .env file).
 
 ## API Endpoints
 
-### 1. Health Check
-- **GET** `/health`
-- Returns server status
-
-### 2. Test SMTP Connection
-- **GET** `/test-connection`
-- Tests the SMTP connection
-
-### 3. Send Email
+### 1. Send Email
 - **POST** `/send-email`
 - Sends an email with HTML content
 
