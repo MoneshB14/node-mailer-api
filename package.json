@@ -5,8 +5,7 @@
   "main": "api-nodemailer.js",
   "scripts": {
     "start": "node api-nodemailer.js",
-    "dev": "nodemon api-nodemailer.js",
-    "vercel-build": "echo 'Build completed'"
+    "dev": "nodemon api-nodemailer.js"
   },
   "dependencies": {
     "express": "^4.18.2",

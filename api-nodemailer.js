@@ -60,24 +60,20 @@ app.use('*', (req, res) => {
     });
 });
 
-// For Vercel deployment, export the app directly
-// For local development, start the server
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = config.server.port || 3000;
-    app.listen(PORT, () => {
-        console.log(`Mailer API server running on port ${PORT}`);
-        mailService.verifyConnection()
-            .then(isConnected => {
-                if (isConnected) {
-                    console.log('SMTP connection verified successfully');
-                } else {
-                    console.log('SMTP connection failed');
-                }
-            })
-            .catch(error => {
-                console.log('Error verifying SMTP connection:', error.message);
-            });
-    });
-}
+const PORT = config.server.port;
+app.listen(PORT, () => {
+    console.log(`Mailer API server running on port ${PORT}`);
+    mailService.verifyConnection()
+        .then(isConnected => {
+            if (isConnected) {
+                console.log('SMTP connection verified successfully');
+            } else {
+                console.log('SMTP connection failed');
+            }
+        })
+        .catch(error => {
+            console.log('Error verifying SMTP connection:', error.message);
+        });
+});
 
 module.exports = app;

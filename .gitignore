@@ -46,15 +46,17 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
-# Vercel
-.vercel
-
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db 
