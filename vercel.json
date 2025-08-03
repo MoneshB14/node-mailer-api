@@ -1,9 +1,20 @@
 {
-    "version": 2,
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "/"
-        }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "api-nodemailer.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api-nodemailer.js"
+    }
+  ],
+  "functions": {
+    "api-nodemailer.js": {
+      "maxDuration": 30
+    }
+  }
 }
