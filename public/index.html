@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mailer API - Netlify Functions</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .health-check {
+            background-color: #28a745;
+        }
+        .health-check:hover {
+            background-color: #1e7e34;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .endpoints {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        .endpoints h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 Mailer API - Netlify Functions</h1>
+        
+        <div class="form-group">
+            <button class="health-check" onclick="checkHealth()">🔍 Check API Health</button>
+        </div>
+
+        <form id="emailForm">
+            <div class="form-group">
+                <label for="to">To Email:</label>
+                <input type="email" id="to" name="to" required placeholder="recipient@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="from">From Email (optional):</label>
+                <input type="email" id="from" name="from" placeholder="sender@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" required placeholder="Email Subject">
+            </div>
+            
+            <div class="form-group">
+                <label for="htmlContent">HTML Content:</label>
+                <textarea id="htmlContent" name="htmlContent" required placeholder="<h1>Hello World</h1><p>This is a test email.</p>"></textarea>
+            </div>
+            
+            <button type="submit">📤 Send Email</button>
+        </form>
+
+        <div id="result"></div>
+
+        <div class="endpoints">
+            <h3>📚 API Endpoints</h3>
+            <p><strong>Health Check:</strong> <code>GET /.netlify/functions/health-check</code></p>
+            <p><strong>Send Email:</strong> <code>POST /.netlify/functions/send-email</code></p>
+            
+            <h4>📝 Request Body for Send Email:</h4>
+            <pre><code>{
+  "to": "recipient@example.com",
+  "subject": "Email Subject",
+  "htmlContent": "&lt;h1&gt;Hello&lt;/h1&gt;&lt;p&gt;Content&lt;/p&gt;",
+  "from": "sender@example.com" // optional
+}</code></pre>
+        </div>
+    </div>
+
+    <script>
+        async function checkHealth() {
+            try {
+                const response = await fetch('/.netlify/functions/health-check');
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = `result ${data.success ? 'success' : 'error'}`;
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                to: formData.get('to'),
+                subject: formData.get('subject'),
+                htmlContent: formData.get('htmlContent')
+            };
+            
+            if (formData.get('from')) {
+                data.from = formData.get('from');
+            }
+            
+            try {
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = `result ${result.success ? 'success' : 'error'}`;
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
