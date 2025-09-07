@@ -5,7 +5,12 @@
   "main": "api-nodemailer.js",
   "scripts": {
     "start": "node api-nodemailer.js",
-    "dev": "nodemon api-nodemailer.js"
+    "dev": "nodemon api-nodemailer.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
   "dependencies": {
     "cors": "^2.8.5",
