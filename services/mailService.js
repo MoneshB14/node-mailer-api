@@ -11,69 +11,6 @@ class MailService {
         });
         
         this.transporter = nodemailer.createTransport(config.smtp);
-        this.fallbackConfigs = config.fallbackConfigs || [];
-        this.currentConfigIndex = 0;
-        this.maxRetries = 3;
-        this.retryDelay = 5000; // 5 seconds
-    }
-
-    // Method to switch to fallback configuration
-    switchToFallback() {
-        if (this.currentConfigIndex < this.fallbackConfigs.length) {
-            const fallbackConfig = this.fallbackConfigs[this.currentConfigIndex];
-            console.log('Switching to fallback SMTP configuration:', {
-                host: fallbackConfig.host,
-                port: fallbackConfig.port,
-                secure: fallbackConfig.secure,
-                user: fallbackConfig.auth.user
-            });
-            
-            this.transporter = nodemailer.createTransport(fallbackConfig);
-            this.currentConfigIndex++;
-            return true;
-        }
-        return false;
-    }
-
-    // Retry mechanism for failed operations with fallback support
-    async retryOperation(operation, maxRetries = this.maxRetries) {
-        let lastError;
-        
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                return await operation();
-            } catch (error) {
-                lastError = error;
-                console.log(`Attempt ${attempt}/${maxRetries} failed:`, error.message);
-                
-                // If this is a connection timeout or similar error, try switching to fallback
-                if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-                    if (this.switchToFallback()) {
-                        console.log('Switched to fallback configuration, retrying...');
-                        continue; // Retry immediately with new configuration
-                    }
-                }
-                
-                if (attempt === maxRetries) {
-                    break;
-                }
-                
-                // Wait before retrying
-                await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
-            }
-        }
-        
-        throw lastError;
-    }
-
-    // Enhanced connection verification with retry
-    async verifyConnectionWithRetry() {
-        return this.retryOperation(async () => {
-            console.log('Verifying SMTP connection to:', config.smtp.host + ':' + config.smtp.port);
-            await this.transporter.verify();
-            console.log('SMTP connection verified successfully');
-            return true;
-        });
     }
 
     async sendEmail(to, subject, htmlContent, from = null) {
@@ -95,11 +32,7 @@ class MailService {
             };
 
             console.log('Attempting to send email to:', to);
-
-            // Use retry mechanism for sending email
-            const result = await this.retryOperation(async () => {
-                return await this.transporter.sendMail(mailOptions);
-            });
+            const result = await this.transporter.sendMail(mailOptions);
 
             console.log('Email sent successfully, messageId:', result.messageId);
             return {
@@ -108,7 +41,7 @@ class MailService {
                 message: 'Email sent successfully'
             };
         } catch (error) {
-            console.error('Error sending email after retries:', error);
+            console.error('Error sending email:', error);
             return {
                 success: false,
                 error: error.message
@@ -206,7 +139,7 @@ class MailService {
             console.log('Attempting to send email with file uploads to:', to);
             console.log('Number of files:', files.length);
             console.log('Files:', files.map(f => ({ name: f.originalname, size: f.size, type: f.mimetype })));
-
+            
             const result = await this.transporter.sendMail(mailOptions);
 
             console.log('Email with file uploads sent successfully, messageId:', result.messageId);
@@ -228,9 +161,12 @@ class MailService {
 
     async verifyConnection() {
         try {
-            return await this.verifyConnectionWithRetry();
+            console.log('Verifying SMTP connection to:', config.smtp.host + ':' + config.smtp.port);
+            await this.transporter.verify();
+            console.log('SMTP connection verified successfully');
+            return true;
         } catch (error) {
-            console.error('SMTP connection verification failed after retries:', error);
+            console.error('SMTP connection verification failed:', error);
             console.error('SMTP Config:', {
                 host: config.smtp.host,
                 port: config.smtp.port,
